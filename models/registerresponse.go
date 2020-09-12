@@ -1,6 +1,6 @@
 package models
 
-type RegisterResponse struct{
+type RegisterResponse struct {
 	AccessToken string `json:"access_token"`
-	HomeLink string `json:"link"`
+	HomeLink    string `json:"link"`
 }

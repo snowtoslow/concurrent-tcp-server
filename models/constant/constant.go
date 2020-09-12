@@ -1,6 +1,6 @@
 package constant
 
 var (
-	TokenUri = "/register"
+	TokenUri          = "/register"
 	HeaderAccessToken = "X-Access-Token"
 )

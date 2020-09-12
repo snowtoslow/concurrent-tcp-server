@@ -2,14 +2,10 @@ package main
 
 import (
 	"concurrent-tcp-server/config"
-	"concurrent-tcp-server/models"
 	"concurrent-tcp-server/models/constant"
-	"encoding/json"
-	"fmt"
+	"concurrent-tcp-server/responses/repository"
 	"github.com/joho/godotenv"
-	"io/ioutil"
 	"log"
-	"net/http"
 )
 
 // function to load env-project variables
@@ -21,33 +17,18 @@ func init() {
 }
 
 func main() {
-	initializedConfigs:= config.New()
-	log.Println("http://"+initializedConfigs.Host+initializedConfigs.RemoteServerPort+constant.TokenUri)
-	test("http://"+initializedConfigs.Host+initializedConfigs.RemoteServerPort+constant.TokenUri)
+	initializedConfigs := config.New()
+
+	responseRepository := repository.NewResponseRepository()
+	homeAndToken, err := responseRepository.GetTokenAndHomeLink("http://" + initializedConfigs.Host + initializedConfigs.RemoteServerPort + constant.TokenUri)
+	if err != nil {
+		log.Println("home and token error:", err)
+	}
+
+	myRoutes, err := responseRepository.GetAllRoutes("http://"+initializedConfigs.Host+initializedConfigs.RemoteServerPort+homeAndToken.HomeLink, homeAndToken.AccessToken)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println(myRoutes)
 }
-
-func test(path string){
-	url := path
-	res, err := http.Get(url)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer res.Body.Close()
-
-	var tokenResponse models.RegisterResponse
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = json.Unmarshal(body, &tokenResponse)
-	if err != nil {
-		panic(err)
-	}
-
-	log.Println(tokenResponse)
-}
-
-
-
-

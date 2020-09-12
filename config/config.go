@@ -6,23 +6,20 @@ import (
 
 type ServersConfig struct {
 	RemoteServerPort string
-	TcpServerPort string
-	Host string
+	TcpServerPort    string
+	Host             string
 }
 
-
-func New() *ServersConfig{
+func New() *ServersConfig {
 	return &ServersConfig{
-		RemoteServerPort : getEnv("REMOTE_SERVER",""),
-		TcpServerPort : getEnv("TCP_SERVER",""),
-		Host: getEnv("HOST",""),
+		RemoteServerPort: getEnv("REMOTE_SERVER", ""),
+		TcpServerPort:    getEnv("TCP_SERVER", ""),
+		Host:             getEnv("HOST", ""),
 	}
 }
 
-
-
-func getEnv(key string, defaultValue string) (envVarValue string){
-	if envVarValue,exist := os.LookupEnv(key);exist {
+func getEnv(key string, defaultValue string) (envVarValue string) {
+	if envVarValue, exist := os.LookupEnv(key); exist {
 		return envVarValue
 	}
 
