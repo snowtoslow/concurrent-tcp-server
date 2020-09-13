@@ -1,6 +1,6 @@
 package models
 
-type Link struct {
+type MainLinks struct {
 	Route1 string `json:"route_1"`
 	Route2 string `json:"route_2"`
 	Route3 string `json:"route_3,omitempty"`

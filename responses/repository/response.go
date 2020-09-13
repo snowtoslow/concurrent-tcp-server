@@ -12,18 +12,18 @@ import (
 // this is something like a service where the logic of methods are implemented
 
 type ResponseRepository struct {
-
+	client *http.Client
 }
 
-func NewResponseRepository() *ResponseRepository {
+func NewResponseRepository(client *http.Client) *ResponseRepository {
 	return &ResponseRepository{
-
+		client: client,
 	}
 }
 
 // method to get token and home link
 func (responseRepository ResponseRepository) GetTokenAndHomeLink(link string) (*models.RegisterResponse, error) {
-	request, err := http.Get(link)
+	request, err := responseRepository.client.Get(link)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (responseRepository ResponseRepository) GetAllRoutes(link string, token str
 		log.Fatal(err)
 	}
 	req.Header.Set(constant.HeaderAccessToken, token)
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := responseRepository.client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}

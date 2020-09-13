@@ -4,5 +4,5 @@ package models
 
 type HomeResponse struct {
 	Message string `json:"msg,omitempty"`
-	Link    `json:"link,omitempty"`
+	MainLinks    `json:"link,omitempty"`
 }
