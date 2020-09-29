@@ -7,17 +7,20 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 )
 
 // this is something like a service where the logic of methods are implemented
 
 type ResponseRepository struct {
 	client *http.Client
+	mutex  *sync.Mutex
 }
 
-func NewResponseRepository(client *http.Client) *ResponseRepository {
+func NewResponseRepository(client *http.Client, mutex *sync.Mutex) *ResponseRepository {
 	return &ResponseRepository{
 		client: client,
+		mutex:  mutex,
 	}
 }
 
@@ -66,4 +69,28 @@ func (responseRepository ResponseRepository) GetAllRoutes(link string, token str
 	}
 
 	return &homeResponse, nil
+}
+
+func (responseRepository ResponseRepository) GetLinkResponse(link string, token string) (responseData *models.ResponseTest, err error) {
+	responseRepository.mutex.Lock()
+
+	req, err := http.NewRequest("GET", link, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	responseRepository.mutex.Unlock()
+	req.Header.Set(constant.HeaderAccessToken, token)
+	resp, err := responseRepository.client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+
+	err = json.Unmarshal(body, &responseData)
+	if err != nil {
+		return nil, err
+	}
+
+	return
 }
