@@ -15,12 +15,14 @@ import (
 type ResponseRepository struct {
 	client *http.Client
 	mutex  *sync.Mutex
+	wg     *sync.WaitGroup
 }
 
-func NewResponseRepository(client *http.Client, mutex *sync.Mutex) *ResponseRepository {
+func NewResponseRepository(client *http.Client, mutex *sync.Mutex, wg *sync.WaitGroup) *ResponseRepository {
 	return &ResponseRepository{
 		client: client,
 		mutex:  mutex,
+		wg:     wg,
 	}
 }
 
@@ -72,6 +74,7 @@ func (responseRepository ResponseRepository) GetAllRoutes(link string, token str
 }
 
 func (responseRepository ResponseRepository) GetLinkResponse(link string, token string) (responseData *models.ResponseTest, err error) {
+	defer responseRepository.wg.Done()
 	responseRepository.mutex.Lock()
 
 	req, err := http.NewRequest("GET", link, nil)
@@ -90,6 +93,13 @@ func (responseRepository ResponseRepository) GetLinkResponse(link string, token 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
 		return nil, err
+	}
+
+	responseRepository.wg.Add(1)
+	if responseData.Link != nil {
+		for _, v := range responseData.Link {
+			go responseRepository.GetLinkResponse("http://localhost:5000"+v, token)
+		}
 	}
 
 	return
