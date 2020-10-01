@@ -73,8 +73,8 @@ func (responseRepository ResponseRepository) GetAllRoutes(link string, token str
 	return &homeResponse, nil
 }
 
-func (responseRepository ResponseRepository) GetLinkResponse(link string, token string) (responseData *models.ResponseTest, err error) {
-	defer responseRepository.wg.Done()
+func (responseRepository ResponseRepository) GetLinkResponse(link string, token string, data *models.ResponseData) {
+	var responseData *models.RouteResponse
 	responseRepository.mutex.Lock()
 
 	req, err := http.NewRequest("GET", link, nil)
@@ -92,15 +92,19 @@ func (responseRepository ResponseRepository) GetLinkResponse(link string, token 
 
 	err = json.Unmarshal(body, &responseData)
 	if err != nil {
-		return nil, err
+		log.Println(err)
 	}
 
-	responseRepository.wg.Add(1)
 	if responseData.Link != nil {
-		for _, v := range responseData.Link {
-			go responseRepository.GetLinkResponse("http://localhost:5000"+v, token)
-		}
+		*data = append(*(data), responseData.Data)
+		responseRepository.responseCall(responseData.Link, token, data)
+	} else {
+		*data = append(*(data), responseData.Data)
 	}
+}
 
-	return
+func (responseRepository ResponseRepository) responseCall(myMap map[string]string, token string, data *models.ResponseData) {
+	for _, v := range myMap {
+		go responseRepository.GetLinkResponse("http://localhost:5000"+v, token, data)
+	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"concurrent-tcp-server/config"
+	"concurrent-tcp-server/models"
 	"concurrent-tcp-server/models/constant"
 	"concurrent-tcp-server/responses/repository"
 	"github.com/joho/godotenv"
@@ -27,6 +28,7 @@ var wg = &sync.WaitGroup{}
 func main() {
 
 	initializedConfigs := config.New()
+	var myDataInArray = &models.ResponseData{}
 
 	runtime.GOMAXPROCS(7)
 	var client = new(http.Client)
@@ -46,15 +48,18 @@ func main() {
 
 	for _, v := range mainMap {
 		wg.Add(1)
+		go func(value string) {
+			defer wg.Done()
+			responseRepository.GetLinkResponse("http://"+initializedConfigs.Host+initializedConfigs.RemoteServerPort+value, homeAndToken.AccessToken, myDataInArray)
+			if err != nil {
+				log.Println(err)
+			}
+			runtime.Gosched()
+		}(v)
 
-		go responseRepository.GetLinkResponse("http://"+initializedConfigs.Host+initializedConfigs.RemoteServerPort+v, homeAndToken.AccessToken)
-		if err != nil {
-			log.Println(err)
-		}
-
-		runtime.Gosched()
 	}
 
 	wg.Wait()
 
+	log.Println(myDataInArray)
 }
