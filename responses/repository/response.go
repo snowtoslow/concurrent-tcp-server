@@ -95,16 +95,20 @@ func (responseRepository ResponseRepository) GetLinkResponse(link string, token 
 		log.Println(err)
 	}
 
-	if responseData.Link != nil {
-		*data = append(*(data), responseData.Data)
-		responseRepository.responseCall(responseData.Link, token, data)
+	responseRepository.responseCallTest(responseData, token, data)
+}
+
+func (responseRepository ResponseRepository) responseCallTest(response *models.RouteResponse, token string, data *models.ResponseData) {
+	if response.Link != nil {
+		responseRepository.createArrayOfData(response.Data, data)
+		for _, v := range response.Link {
+			go responseRepository.GetLinkResponse("http://localhost:5000"+v, token, data)
+		}
 	} else {
-		*data = append(*(data), responseData.Data)
+		responseRepository.createArrayOfData(response.Data, data)
 	}
 }
 
-func (responseRepository ResponseRepository) responseCall(myMap map[string]string, token string, data *models.ResponseData) {
-	for _, v := range myMap {
-		go responseRepository.GetLinkResponse("http://localhost:5000"+v, token, data)
-	}
+func (responseRepository ResponseRepository) createArrayOfData(data string, responseData *models.ResponseData) {
+	*responseData = append(*responseData, data)
 }

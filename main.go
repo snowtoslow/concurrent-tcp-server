@@ -20,8 +20,6 @@ func init() {
 	}
 }
 
-// balance for shared bank account
-
 var mutex = &sync.Mutex{}
 var wg = &sync.WaitGroup{}
 
