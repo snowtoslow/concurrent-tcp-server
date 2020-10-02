@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"concurrent-tcp-server/models"
 	"concurrent-tcp-server/models/constant"
+	"concurrent-tcp-server/models/httpresponses"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -27,7 +27,7 @@ func NewResponseRepository(client *http.Client, mutex *sync.Mutex, wg *sync.Wait
 }
 
 // method to get token and home link
-func (responseRepository ResponseRepository) GetTokenAndHomeLink(link string) (*models.RegisterResponse, error) {
+func (responseRepository ResponseRepository) GetTokenAndHomeLink(link string) (*httpresponses.RegisterResponse, error) {
 	request, err := responseRepository.client.Get(link)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (responseRepository ResponseRepository) GetTokenAndHomeLink(link string) (*
 		return nil, err
 	}
 
-	var registerResponse models.RegisterResponse
+	var registerResponse httpresponses.RegisterResponse
 
 	err = json.Unmarshal(responseBody, &registerResponse)
 	if err != nil {
@@ -51,7 +51,7 @@ func (responseRepository ResponseRepository) GetTokenAndHomeLink(link string) (*
 }
 
 // method to get token for home link and access all routes
-func (responseRepository ResponseRepository) GetAllRoutes(link string, token string) (*models.HomeResponse, error) {
+func (responseRepository ResponseRepository) GetAllRoutes(link string, token string) (*httpresponses.HomeResponse, error) {
 	req, err := http.NewRequest("GET", link, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -63,7 +63,7 @@ func (responseRepository ResponseRepository) GetAllRoutes(link string, token str
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	var homeResponse models.HomeResponse
+	var homeResponse httpresponses.HomeResponse
 
 	err = json.Unmarshal(body, &homeResponse)
 	if err != nil {
@@ -73,8 +73,8 @@ func (responseRepository ResponseRepository) GetAllRoutes(link string, token str
 	return &homeResponse, nil
 }
 
-func (responseRepository ResponseRepository) GetLinkResponse(link string, token string, data *models.ResponseData) {
-	var responseData *models.RouteResponse
+func (responseRepository ResponseRepository) GetLinkResponse(link string, token string, data map[string]string) {
+	var responseData *httpresponses.RouteResponse
 	responseRepository.mutex.Lock()
 
 	req, err := http.NewRequest("GET", link, nil)
@@ -98,17 +98,21 @@ func (responseRepository ResponseRepository) GetLinkResponse(link string, token 
 	responseRepository.responseCallTest(responseData, token, data)
 }
 
-func (responseRepository ResponseRepository) responseCallTest(response *models.RouteResponse, token string, data *models.ResponseData) {
+func (responseRepository ResponseRepository) responseCallTest(response *httpresponses.RouteResponse, token string, myMap map[string]string) {
 	if response.Link != nil {
-		responseRepository.createArrayOfData(response.Data, data)
+		responseRepository.createArrayOfData(response, myMap)
 		for _, v := range response.Link {
-			go responseRepository.GetLinkResponse("http://localhost:5000"+v, token, data)
+			go responseRepository.GetLinkResponse("http://localhost:5000"+v, token, myMap)
 		}
 	} else {
-		responseRepository.createArrayOfData(response.Data, data)
+		responseRepository.createArrayOfData(response, myMap)
 	}
 }
 
-func (responseRepository ResponseRepository) createArrayOfData(data string, responseData *models.ResponseData) {
-	*responseData = append(*responseData, data)
+func (responseRepository ResponseRepository) createArrayOfData(response *httpresponses.RouteResponse, myMap map[string]string) {
+	if len(response.MimeType) != 0 {
+		myMap[response.Data] = response.MimeType
+	} else {
+		myMap[response.Data] = "json"
+	}
 }

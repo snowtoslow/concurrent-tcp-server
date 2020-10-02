@@ -1,4 +1,4 @@
-package models
+package httpresponses
 
 // struct to get home response
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"concurrent-tcp-server/config"
-	"concurrent-tcp-server/models"
 	"concurrent-tcp-server/models/constant"
+	"concurrent-tcp-server/parser"
 	"concurrent-tcp-server/responses/repository"
 	"github.com/joho/godotenv"
 	"log"
@@ -26,7 +26,7 @@ var wg = &sync.WaitGroup{}
 func main() {
 
 	initializedConfigs := config.New()
-	var myDataInArray = &models.ResponseData{}
+	var myDataInArray = make(map[string]string)
 
 	runtime.GOMAXPROCS(7)
 	var client = new(http.Client)
@@ -59,5 +59,9 @@ func main() {
 
 	wg.Wait()
 
-	log.Println(myDataInArray)
+	for k, v := range myDataInArray {
+		if dataToParse, exists := parser.ParsePlatforms[v]; exists {
+			dataToParse.Parse(k)
+		}
+	}
 }

@@ -1,4 +1,4 @@
-package models
+package httpresponses
 
 type RegisterResponse struct {
 	AccessToken string `json:"access_token"`
