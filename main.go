@@ -27,6 +27,7 @@ func main() {
 
 	initializedConfigs := config.New()
 	var myDataInArray = make(map[string]string)
+	filledGroupedData := parser.GroupedData{}
 
 	runtime.GOMAXPROCS(7)
 	var client = new(http.Client)
@@ -61,7 +62,11 @@ func main() {
 
 	for k, v := range myDataInArray {
 		if dataToParse, exists := parser.ParsePlatforms[v]; exists {
-			dataToParse.Parse(k)
+			if err := dataToParse.Parse(k, &filledGroupedData); err != nil {
+				log.Println(err)
+			}
 		}
 	}
+
+	//log.Println("DATAJSON:",filledGroupedData)
 }

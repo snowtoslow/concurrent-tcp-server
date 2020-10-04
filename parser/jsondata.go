@@ -2,25 +2,23 @@ package parser
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 )
 
-func (jsonData JsonData) Parse(dataToBeParsed string) {
+func (jsonData JsonData) Parse(dataToBeParsed string, data *GroupedData) (err error) {
 	log.Println("Logic to parse json")
 
 	var myResp []JsonData
-
-	if dataToBeParsed[len(dataToBeParsed)-2] == 44 {
-		dataToBeParsed = dataToBeParsed[:len(dataToBeParsed)-2] + "]"
+	if dataToBeParsed[len(dataToBeParsed)-3] == 44 {
+		dataToBeParsed = dataToBeParsed[:len(dataToBeParsed)-3] + "]"
 	}
 
-	err := json.Unmarshal([]byte(dataToBeParsed), &myResp)
+	err = json.Unmarshal([]byte(dataToBeParsed), &myResp)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
-	log.Println(myResp)
+	data.JsonData = append(data.JsonData, myResp)
+	return
 }
 
 type JsonData struct {

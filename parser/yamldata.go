@@ -5,16 +5,17 @@ import (
 	"log"
 )
 
-func (yamlData YamlData) Parse(dataToBeParsed string) {
+func (yamlData YamlData) Parse(dataToBeParsed string, groupedData *GroupedData) (err error) {
 	log.Println("Logic to parse yaml")
 	y := YamlData{}
 
-	err := yaml.Unmarshal([]byte(dataToBeParsed), &y)
+	err = yaml.Unmarshal([]byte(dataToBeParsed), &y)
 	if err != nil {
-		log.Println(err)
+		return
 	}
 
-	log.Println(y)
+	groupedData.YamlData = append(groupedData.YamlData, y) //DONE
+	return
 }
 
 type YamlData []struct {

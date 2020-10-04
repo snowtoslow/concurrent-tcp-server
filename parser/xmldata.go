@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func (xmlData XmlData) Parse(dataToBeParsed string) {
+func (xmlData XmlData) Parse(dataToBeParsed string, groupedData *GroupedData) (err error) {
 	log.Println("Logic to parse xml")
 
 	data := XmlData{}
@@ -15,10 +15,11 @@ func (xmlData XmlData) Parse(dataToBeParsed string) {
 	rawXmlWithOutNewLines := regexToDeleteNeLines.ReplaceAllString(dataToBeParsed, "")
 
 	if err := xml.Unmarshal([]byte(rawXmlWithOutNewLines), &data); err != nil {
-		log.Println(err)
+		return err
 	} else {
-		log.Println(data.RecordList)
+		groupedData.XmlData = append(groupedData.XmlData, data.RecordList) //PASSED
 	}
+	return
 }
 
 type XmlData struct {

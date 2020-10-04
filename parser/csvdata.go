@@ -8,7 +8,7 @@ import (
 
 type CsvData struct{}
 
-func (csvData CsvData) Parse(dataToBeParsed string) {
+func (csvData CsvData) Parse(dataToBeParsed string, groupedData *GroupedData) (err error) {
 	log.Println("Logic to parse csv")
 
 	reader := csv.NewReader(strings.NewReader(dataToBeParsed))
@@ -16,17 +16,17 @@ func (csvData CsvData) Parse(dataToBeParsed string) {
 	reader.FieldsPerRecord = -1 // see the Reader struct information below
 	rawCSVData, err := reader.ReadAll()
 	if err != nil {
-		log.Println(err)
+		return
 	}
-
-	log.Println(rawCSVData)
-	// logic for search
-	/*for _, row := range rawCSVdata {
-		for _, col := range row {
-			if col == stringToFindColumnBy{
-				log.Println(row)
-			}
-		}
-	}*/
-
+	groupedData.CsvData = append(groupedData.CsvData, rawCSVData[1:])
+	return
 }
+
+// logic for search
+/*for _, row := range rawCSVdata {
+	for _, col := range row {
+		if col == stringToFindColumnBy{
+			log.Println(row)
+		}
+	}
+}*/
