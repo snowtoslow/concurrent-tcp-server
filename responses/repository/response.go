@@ -95,21 +95,21 @@ func (responseRepository ResponseRepository) GetLinkResponse(link string, token 
 		log.Println(err)
 	}
 
-	responseRepository.responseCallTest(responseData, token, data)
+	responseRepository.recursiveGetResponse(responseData, token, data)
 }
 
-func (responseRepository ResponseRepository) responseCallTest(response *httpresponses.RouteResponse, token string, myMap map[string]string) {
+func (responseRepository ResponseRepository) recursiveGetResponse(response *httpresponses.RouteResponse, token string, myMap map[string]string) {
 	if response.Link != nil {
-		responseRepository.createArrayOfData(response, myMap)
+		responseRepository.createMapOfDataAndTypes(response, myMap)
 		for _, v := range response.Link {
 			go responseRepository.GetLinkResponse("http://localhost:5000"+v, token, myMap)
 		}
 	} else {
-		responseRepository.createArrayOfData(response, myMap)
+		responseRepository.createMapOfDataAndTypes(response, myMap)
 	}
 }
 
-func (responseRepository ResponseRepository) createArrayOfData(response *httpresponses.RouteResponse, myMap map[string]string) {
+func (responseRepository ResponseRepository) createMapOfDataAndTypes(response *httpresponses.RouteResponse, myMap map[string]string) {
 	if len(response.MimeType) != 0 {
 		myMap[response.Data] = response.MimeType
 	} else {

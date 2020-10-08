@@ -1,10 +1,12 @@
 package main
 
+//add it in line 57 in case of some pizdetz runtime.Gosched()
 import (
 	"concurrent-tcp-server/config"
 	"concurrent-tcp-server/models/constant"
 	"concurrent-tcp-server/parser"
 	"concurrent-tcp-server/responses/repository"
+	"concurrent-tcp-server/utils"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -29,7 +31,7 @@ func main() {
 	var myDataInArray = make(map[string]string)
 	filledGroupedData := parser.GroupedData{}
 
-	runtime.GOMAXPROCS(7)
+	runtime.GOMAXPROCS(7) // allow the run-time support to utilize more than one OS thread(in this case 7)
 	var client = new(http.Client)
 
 	responseRepository := repository.NewResponseRepository(client, mutex, wg)
@@ -46,14 +48,14 @@ func main() {
 	var mainMap = myRoutes.Link
 
 	for _, v := range mainMap {
-		wg.Add(1)
+		wg.Add(1) // spawn goroutines
 		go func(value string) {
 			defer wg.Done()
 			responseRepository.GetLinkResponse("http://"+initializedConfigs.Host+initializedConfigs.RemoteServerPort+value, homeAndToken.AccessToken, myDataInArray)
 			if err != nil {
 				log.Println(err)
 			}
-			runtime.Gosched()
+
 		}(v)
 
 	}
@@ -68,5 +70,5 @@ func main() {
 		}
 	}
 
-	//log.Println("DATAJSON:",filledGroupedData)
+	utils.SearchInParsedData(filledGroupedData.FullMap, "id")
 }

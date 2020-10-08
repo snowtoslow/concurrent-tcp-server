@@ -15,18 +15,30 @@ func (csvData CsvData) Parse(dataToBeParsed string, groupedData *GroupedData) (e
 	reader.TrimLeadingSpace = true
 	reader.FieldsPerRecord = -1 // see the Reader struct information below
 	rawCSVData, err := reader.ReadAll()
+
 	if err != nil {
 		return
 	}
-	groupedData.CsvData = append(groupedData.CsvData, rawCSVData[1:])
-	return
-}
 
-// logic for search
-/*for _, row := range rawCSVdata {
-	for _, col := range row {
-		if col == stringToFindColumnBy{
-			log.Println(row)
+	header := []string{} // holds first row (header)
+
+	for lineNum, record := range rawCSVData {
+
+		// for first row, build the header slice
+		if lineNum == 0 {
+			for i := 0; i < len(record); i++ {
+				header = append(header, strings.TrimSpace(record[i]))
+			}
+		} else {
+			// for each cell, map[string]string k=header v=value
+			line := make(map[string]interface{})
+			for i := 0; i < len(record); i++ {
+				line[header[i]] = record[i]
+			}
+
+			groupedData.FullMap = append(groupedData.FullMap, line)
 		}
 	}
-}*/
+
+	return
+}

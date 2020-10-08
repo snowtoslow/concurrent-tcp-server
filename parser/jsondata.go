@@ -5,31 +5,27 @@ import (
 	"log"
 )
 
+type JsonData struct{}
+
 func (jsonData JsonData) Parse(dataToBeParsed string, data *GroupedData) (err error) {
+
 	log.Println("Logic to parse json")
 
-	var myResp []JsonData
+	var m []map[string]interface{}
+
+	/*var arrayOfMaps []map[string]interface{}*/
+
 	if dataToBeParsed[len(dataToBeParsed)-3] == 44 {
 		dataToBeParsed = dataToBeParsed[:len(dataToBeParsed)-3] + "]"
 	}
-
-	err = json.Unmarshal([]byte(dataToBeParsed), &myResp)
+	err = json.Unmarshal([]byte(dataToBeParsed), &m)
 	if err != nil {
-		return
+		return err
 	}
-	data.JsonData = append(data.JsonData, myResp)
-	return
-}
+	for _, v := range m {
+		data.FullMap = append(data.FullMap, v)
+		/*arrayOfMaps = append(arrayOfMaps,v)*/
+	}
 
-type JsonData struct {
-	Id           int8   `json:"id,omitempty"`
-	FirstName    string `json:"first_name,omitempty"`
-	LastName     string `json:"last_name,omitempty"`
-	CardNumber   string `json:"card_number,omitempty"`
-	CardBalance  string `json:"card_balance,omitempty"`
-	CardCurrency string `json:"card_currency,omitempty"`
-	Email        string `json:"email,omitempty"`
-	Organization string `json:"organization,omitempty"`
-	FullName     string `json:"full_name,omitempty"`
-	EmployeeId   string `json:"employee_id,omitempty"`
+	return
 }
