@@ -6,9 +6,10 @@ import (
 	"concurrent-tcp-server/models/constant"
 	"concurrent-tcp-server/parser"
 	"concurrent-tcp-server/responses/repository"
-	"concurrent-tcp-server/utils"
+	"concurrent-tcp-server/server"
 	"github.com/joho/godotenv"
 	"log"
+	"net"
 	"net/http"
 	"runtime"
 	"sync"
@@ -30,6 +31,7 @@ func main() {
 	initializedConfigs := config.New()
 	var myDataInArray = make(map[string]string)
 	filledGroupedData := parser.GroupedData{}
+	connection := new(net.Conn)
 
 	runtime.GOMAXPROCS(7) // allow the run-time support to utilize more than one OS thread(in this case 7)
 	var client = new(http.Client)
@@ -70,5 +72,8 @@ func main() {
 		}
 	}
 
-	utils.SearchInParsedData(filledGroupedData.FullMap, "id")
+	myServer := server.NewServer(*connection)
+
+	myServer.RunServer(filledGroupedData.FullMap, initializedConfigs.TcpServerPort)
+
 }

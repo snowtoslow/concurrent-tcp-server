@@ -14,7 +14,7 @@ func ToSnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-func SearchInParsedData(inputMap []map[string]interface{}, inputWord string) {
+func testSearchInParsedData(inputMap []map[string]interface{}, inputWord string) {
 	for i := 0; i < len(inputMap); i++ {
 		if v, found := inputMap[i][inputWord]; found {
 			fmt.Printf("%10v", v)
