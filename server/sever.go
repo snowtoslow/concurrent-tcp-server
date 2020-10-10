@@ -46,7 +46,7 @@ func (server Server) RunServer(inputMap []map[string]interface{}, port string) {
 	}
 }
 
-func (server Server) handleConnection(inputMap []map[string]interface{}) (err error) {
+func (server Server) handleConnection(inputMap []map[string]interface{}) {
 	log.Println("Handle connection is started!")
 
 	for {
@@ -68,12 +68,11 @@ func (server Server) handleConnection(inputMap []map[string]interface{}) (err er
 		}
 	}
 
-	err = server.connection.Close()
+	err := server.connection.Close()
 	if err != nil {
-		return
+		log.Println(err)
 	}
 
-	return nil
 }
 
 func (server Server) searchInParsedData(inputMap []map[string]interface{}, inputWord string) (err error) {
