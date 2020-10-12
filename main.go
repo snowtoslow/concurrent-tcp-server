@@ -72,7 +72,7 @@ func main() {
 		}
 	}
 
-	myServer := server.NewServer(*connection)
+	myServer := server.NewServer(*connection, filledGroupedData.FullMap, constant.ExpectedInput)
 
 	myServer.RunServer(filledGroupedData.FullMap, initializedConfigs.TcpServerPort)
 

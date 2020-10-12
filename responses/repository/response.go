@@ -110,6 +110,8 @@ func (responseRepository ResponseRepository) recursiveGetResponse(response *http
 }
 
 func (responseRepository ResponseRepository) createMapOfDataAndTypes(response *httpresponses.RouteResponse, myMap map[string]string) {
+	responseRepository.mutex.Lock() //can cause troubles
+	defer responseRepository.mutex.Unlock()
 	if len(response.MimeType) != 0 {
 		myMap[response.Data] = response.MimeType
 	} else {

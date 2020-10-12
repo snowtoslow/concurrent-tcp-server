@@ -8,25 +8,27 @@ package server
 
 import (
 	"bufio"
-	"concurrent-tcp-server/models/constant"
-	"concurrent-tcp-server/utils"
-	"fmt"
 	"log"
 	"net"
 	"strings"
 )
 
 type Server struct {
-	connection net.Conn
+	connection    net.Conn
+	myMap         []map[string]interface{}
+	input         string
+	validationStr string
 }
 
-func NewServer(connection net.Conn) *Server {
+func NewServer(connection net.Conn, myMap []map[string]interface{}, validationStr string) *Server {
 	return &Server{
-		connection: connection,
+		connection:    connection,
+		myMap:         myMap,
+		validationStr: validationStr,
 	}
 }
 
-func (server Server) RunServer(inputMap []map[string]interface{}, port string) {
+func (server *Server) RunServer(inputMap []map[string]interface{}, port string) {
 	log.Println("Server start running on port: ", port)
 	listen, err := net.Listen("tcp", port)
 	if err != nil {
@@ -46,7 +48,7 @@ func (server Server) RunServer(inputMap []map[string]interface{}, port string) {
 	}
 }
 
-func (server Server) handleConnection(inputMap []map[string]interface{}) {
+func (server *Server) handleConnection(inputMap []map[string]interface{}) {
 	log.Println("Handle connection is started!")
 
 	for {
@@ -59,13 +61,25 @@ func (server Server) handleConnection(inputMap []map[string]interface{}) {
 			break
 		}
 
-		if err, myValidString := server.validateServerInput(strings.TrimSpace(netData), constant.ExpectedInput); err != nil {
-			server.connection.Write([]byte(err.Error() + "\n"))
-		} else {
-			if err = server.searchInParsedData(inputMap, myValidString); err != nil {
-				server.connection.Write([]byte(ErrFieldNotFound.Error() + "\n"))
-			}
+		onCommand := &validate{
+			device: server,
 		}
+
+		ofCommand := &parse{
+			device: server,
+		}
+
+		onButton := &response{
+			command: onCommand,
+		}
+
+		ofButton := &response{
+			command: ofCommand,
+		}
+
+		onButton.handleData(strings.TrimSpace(netData))
+		ofButton.handleData(strings.TrimSpace(server.input))
+
 	}
 
 	err := server.connection.Close()
@@ -75,7 +89,7 @@ func (server Server) handleConnection(inputMap []map[string]interface{}) {
 
 }
 
-func (server Server) searchInParsedData(inputMap []map[string]interface{}, inputWord string) (err error) {
+/*func (server *Server) searchInParsedData(inputMap []map[string]interface{}, inputWord string) (err error) {
 	foundFlag := false
 	for i := 0; i < len(inputMap); i++ {
 		if v, found := inputMap[i][inputWord]; found {
@@ -93,9 +107,9 @@ func (server Server) searchInParsedData(inputMap []map[string]interface{}, input
 	return
 }
 
-func (server Server) validateServerInput(input string, validationString string) (error, string) {
+func (server *Server) validateServerInput(input string, validationString string) (error, string) {
 	if strings.Contains(input, validationString) && len(strings.Fields(input)) == 2 {
 		return nil, utils.ToSnakeCase(strings.Fields(input)[1])
 	}
 	return NotValidInput, input
-}
+}*/
