@@ -1,17 +1,21 @@
 package server
 
 import (
+	"concurrent-tcp-server/models/constant"
 	"concurrent-tcp-server/utils"
 	"fmt"
+	"log"
 	"strings"
 )
 
 type response struct {
-	command Command
+	command []Command
 }
 
 func (r *response) handleData(input string) {
-	r.command.execute(input)
+	for _, c := range r.command {
+		c.execute(input)
+	}
 }
 
 //command interface
@@ -35,30 +39,51 @@ type parse struct {
 }
 
 func (p *parse) execute(input string) {
-	p.device.Parse(input)
+	p.device.PrintResponse(input)
 }
 
 //receiver interface
 
 type device interface {
-	Validate(input string)
-	Parse(input string)
+	Validate(string)
+	/*getData(string)
+	errorReturn(bool)*/
+	PrintResponse(string)
 }
 
 func (server *Server) Validate(input string) {
-	if strings.Contains(input, server.validationStr) && len(strings.Fields(input)) == 2 {
-		server.input = utils.ToSnakeCase(strings.Fields(input)[1])
+	log.Println("Validation")
+	if strings.Contains(input, constant.ExpectedInput) && len(strings.Fields(input)) == 2 {
+		input = utils.ToSnakeCase(strings.Fields(input)[1])
 	} else {
-		server.connection.Write([]byte(NotValidInput.Error() + "\n"))
+		input = "null"
+	}
+	log.Println("MY NEW INPUT:", input)
+}
+
+func (server *Server) PrintResponse(input string) {
+	log.Println("RESPONSE:", input)
+	if input == "null" {
+		server.connection.Write([]byte(fmt.Sprintf("%v\n", NotValidInput.Error())))
+	} else {
+		server.getData(input)
 	}
 }
 
-func (server *Server) Parse(input string) {
+func (server *Server) getData(input string) {
+	log.Println("GET DATA:", input)
 	for i := 0; i < len(server.myMap); i++ {
 		if v, found := server.myMap[i][input]; found {
 			server.connection.Write([]byte(fmt.Sprintf("%v\n", v)))
 		} else {
-			server.connection.Write([]byte(ErrFieldNotFound.Error() + "\n"))
+			server.errorReturn(found)
 		}
+	}
+}
+
+func (server *Server) errorReturn(found bool) {
+	if !found {
+		server.connection.Write([]byte(fmt.Sprintf("%v\n", ErrFieldNotFound.Error())))
+		return
 	}
 }

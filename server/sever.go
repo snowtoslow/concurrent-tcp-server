@@ -14,17 +14,14 @@ import (
 )
 
 type Server struct {
-	connection    net.Conn
-	myMap         []map[string]interface{}
-	input         string
-	validationStr string
+	connection net.Conn
+	myMap      []map[string]interface{}
 }
 
-func NewServer(connection net.Conn, myMap []map[string]interface{}, validationStr string) *Server {
+func NewServer(connection net.Conn, myMap []map[string]interface{}) *Server {
 	return &Server{
-		connection:    connection,
-		myMap:         myMap,
-		validationStr: validationStr,
+		connection: connection,
+		myMap:      myMap,
 	}
 }
 
@@ -57,7 +54,9 @@ func (server *Server) handleConnection(inputMap []map[string]interface{}) {
 			log.Fatal("Error reading: ", err)
 		}
 
-		if strings.TrimSpace(netData) == "STOP" {
+		myInput := strings.TrimSpace(netData)
+
+		if myInput == "STOP" {
 			break
 		}
 
@@ -69,16 +68,13 @@ func (server *Server) handleConnection(inputMap []map[string]interface{}) {
 			device: server,
 		}
 
-		onButton := &response{
-			command: onCommand,
+		command := []Command{onCommand, ofCommand}
+
+		response := &response{
+			command: command,
 		}
 
-		ofButton := &response{
-			command: ofCommand,
-		}
-
-		onButton.handleData(strings.TrimSpace(netData))
-		ofButton.handleData(strings.TrimSpace(server.input))
+		response.handleData(myInput)
 
 	}
 
