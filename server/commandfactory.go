@@ -1,11 +1,11 @@
 package server
 
-type executor struct {
-	commands []Command
+type response struct {
+	command []Command
 }
 
-func (executor *executor) executeCommand(input *string) {
-	for _, executor := range executor.commands {
-		executor.execute(input)
+func (r *response) handleData(input *string) {
+	for _, c := range r.command {
+		c.execute(input)
 	}
 }

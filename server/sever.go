@@ -25,7 +25,7 @@ func NewServer(connection net.Conn, myMap []map[string]interface{}) *Server {
 	}
 }
 
-func (server *Server) RunServer(inputMap []map[string]interface{}, port string) {
+func (server *Server) RunServer(port string) {
 	log.Println("Server start running on port: ", port)
 	listen, err := net.Listen("tcp", port)
 	if err != nil {

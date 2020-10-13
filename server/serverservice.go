@@ -7,16 +7,6 @@ import (
 	"strings"
 )
 
-type response struct {
-	command []Command
-}
-
-func (r *response) handleData(input *string) {
-	for _, c := range r.command {
-		c.execute(input)
-	}
-}
-
 //command interface
 type Command interface {
 	execute(input *string)
@@ -32,7 +22,6 @@ func (v *validate) execute(input *string) {
 }
 
 //concrete command parse
-
 type parse struct {
 	device device
 }
