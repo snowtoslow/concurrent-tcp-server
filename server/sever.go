@@ -40,12 +40,12 @@ func (server *Server) RunServer(inputMap []map[string]interface{}, port string) 
 			return
 		}
 
-		go server.handleConnection(inputMap)
+		go server.handleConnection()
 
 	}
 }
 
-func (server *Server) handleConnection(inputMap []map[string]interface{}) {
+func (server *Server) handleConnection() {
 	log.Println("Handle connection is started!")
 
 	for {
@@ -60,21 +60,21 @@ func (server *Server) handleConnection(inputMap []map[string]interface{}) {
 			break
 		}
 
-		onCommand := &validate{
+		validateCommand := &validate{
 			device: server,
 		}
 
-		ofCommand := &parse{
+		parseCommand := &parse{
 			device: server,
 		}
 
-		command := []Command{onCommand, ofCommand}
+		command := []Command{validateCommand, parseCommand}
 
 		response := &response{
 			command: command,
 		}
 
-		response.handleData(myInput)
+		response.handleData(&myInput)
 
 	}
 
@@ -82,30 +82,4 @@ func (server *Server) handleConnection(inputMap []map[string]interface{}) {
 	if err != nil {
 		log.Println(err)
 	}
-
 }
-
-/*func (server *Server) searchInParsedData(inputMap []map[string]interface{}, inputWord string) (err error) {
-	foundFlag := false
-	for i := 0; i < len(inputMap); i++ {
-		if v, found := inputMap[i][inputWord]; found {
-			foundFlag = true
-			err = nil
-			server.connection.Write([]byte(fmt.Sprintf("%v\n", v)))
-		} else {
-			if foundFlag == false {
-				err = ErrFieldNotFound
-			}
-			continue
-		}
-	}
-
-	return
-}
-
-func (server *Server) validateServerInput(input string, validationString string) (error, string) {
-	if strings.Contains(input, validationString) && len(strings.Fields(input)) == 2 {
-		return nil, utils.ToSnakeCase(strings.Fields(input)[1])
-	}
-	return NotValidInput, input
-}*/

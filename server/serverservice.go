@@ -4,7 +4,6 @@ import (
 	"concurrent-tcp-server/models/constant"
 	"concurrent-tcp-server/utils"
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -12,7 +11,7 @@ type response struct {
 	command []Command
 }
 
-func (r *response) handleData(input string) {
+func (r *response) handleData(input *string) {
 	for _, c := range r.command {
 		c.execute(input)
 	}
@@ -20,7 +19,7 @@ func (r *response) handleData(input string) {
 
 //command interface
 type Command interface {
-	execute(input string)
+	execute(input *string)
 }
 
 //concrete validate command
@@ -28,7 +27,7 @@ type validate struct {
 	device device
 }
 
-func (v *validate) execute(input string) {
+func (v *validate) execute(input *string) {
 	v.device.Validate(input)
 }
 
@@ -38,52 +37,45 @@ type parse struct {
 	device device
 }
 
-func (p *parse) execute(input string) {
+func (p *parse) execute(input *string) {
 	p.device.PrintResponse(input)
 }
 
 //receiver interface
 
 type device interface {
-	Validate(string)
-	/*getData(string)
-	errorReturn(bool)*/
-	PrintResponse(string)
+	Validate(*string)
+	PrintResponse(*string)
 }
 
-func (server *Server) Validate(input string) {
-	log.Println("Validation")
-	if strings.Contains(input, constant.ExpectedInput) && len(strings.Fields(input)) == 2 {
-		input = utils.ToSnakeCase(strings.Fields(input)[1])
+func (server *Server) Validate(input *string) {
+	if strings.Contains(*input, constant.ExpectedInput) && len(strings.Fields(*input)) == 2 {
+		*input = utils.ToSnakeCase(strings.Fields(*input)[1])
 	} else {
-		input = "null"
+		*input = "null"
 	}
-	log.Println("MY NEW INPUT:", input)
 }
 
-func (server *Server) PrintResponse(input string) {
-	log.Println("RESPONSE:", input)
-	if input == "null" {
+func (server *Server) PrintResponse(input *string) {
+	if *input == "null" {
 		server.connection.Write([]byte(fmt.Sprintf("%v\n", NotValidInput.Error())))
 	} else {
-		server.getData(input)
+		server.getData(*input)
 	}
 }
 
 func (server *Server) getData(input string) {
-	log.Println("GET DATA:", input)
+	foundFlag := false
 	for i := 0; i < len(server.myMap); i++ {
 		if v, found := server.myMap[i][input]; found {
+			foundFlag = true
 			server.connection.Write([]byte(fmt.Sprintf("%v\n", v)))
 		} else {
-			server.errorReturn(found)
+			if foundFlag == false {
+				server.connection.Write([]byte(fmt.Sprintf("%v\n", ErrFieldNotFound.Error())))
+				break
+			}
+			continue
 		}
-	}
-}
-
-func (server *Server) errorReturn(found bool) {
-	if !found {
-		server.connection.Write([]byte(fmt.Sprintf("%v\n", ErrFieldNotFound.Error())))
-		return
 	}
 }
