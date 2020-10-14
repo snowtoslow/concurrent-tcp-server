@@ -18,27 +18,28 @@ func (server *Server) Validate(input *string) {
 }
 
 func (server *Server) PrintResponse(input *string) {
-	log.Println("Print response")
+	log.Println("PRINT RESPONSE")
 	if *input == "null" {
 		server.connection.Write([]byte(fmt.Sprintf("%v\n", NotValidInput.Error())))
 	} else {
-		server.getData(*input)
+		server.getData(input)
 	}
 }
 
-func (server *Server) getData(input string) {
-	log.Println("GET DATA!")
+func (server *Server) getData(input *string) {
+	log.Println("GET DATA!", *input)
 	foundFlag := false
+	var err error
 	for i := 0; i < len(server.myMap); i++ {
-		if v, found := server.myMap[i][input]; found {
+		if v, found := server.myMap[i][*input]; found {
 			foundFlag = true
 			server.connection.Write([]byte(fmt.Sprintf("%v\n", v)))
 		} else {
 			if foundFlag == false {
-				server.connection.Write([]byte(fmt.Sprintf("%v\n", ErrFieldNotFound.Error())))
-				break
+				err = ErrFieldNotFound
 			}
 			continue
 		}
 	}
+	server.connection.Write([]byte(fmt.Sprintf("%v\n", err)))
 }
