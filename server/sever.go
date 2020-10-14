@@ -8,6 +8,9 @@ package server
 
 import (
 	"bufio"
+	command2 "concurrent-tcp-server/server/command"
+	"concurrent-tcp-server/server/command/concrete-commands/receivedata"
+	"concurrent-tcp-server/server/command/concrete-commands/validation"
 	"log"
 	"net"
 	"strings"
@@ -60,22 +63,17 @@ func (server *Server) handleConnection() {
 			break
 		}
 
-		validateCommand := &validate{
-			device: server,
+		response := &command2.Response{
+			Command: []command2.Command{
+				&validation.Validate{
+					Device: server,
+				},
+				&receivedata.ReceiveData{
+					Device: server,
+				},
+			},
 		}
-
-		parseCommand := &parse{
-			device: server,
-		}
-
-		command := []Command{validateCommand, parseCommand}
-
-		response := &response{
-			command: command,
-		}
-
-		response.handleData(&myInput)
-
+		response.HandleData(&myInput)
 	}
 
 	err := server.connection.Close()

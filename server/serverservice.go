@@ -4,40 +4,12 @@ import (
 	"concurrent-tcp-server/models/constant"
 	"concurrent-tcp-server/utils"
 	"fmt"
+	"log"
 	"strings"
 )
 
-//command interface
-type Command interface {
-	execute(input *string)
-}
-
-//concrete validate command
-type validate struct {
-	device device
-}
-
-func (v *validate) execute(input *string) {
-	v.device.Validate(input)
-}
-
-//concrete command parse
-type parse struct {
-	device device
-}
-
-func (p *parse) execute(input *string) {
-	p.device.PrintResponse(input)
-}
-
-//receiver interface
-
-type device interface {
-	Validate(*string)
-	PrintResponse(*string)
-}
-
 func (server *Server) Validate(input *string) {
+	log.Println("VALIDATE")
 	if strings.Contains(*input, constant.ExpectedInput) && len(strings.Fields(*input)) == 2 {
 		*input = utils.ToSnakeCase(strings.Fields(*input)[1])
 	} else {
@@ -46,6 +18,7 @@ func (server *Server) Validate(input *string) {
 }
 
 func (server *Server) PrintResponse(input *string) {
+	log.Println("Print response")
 	if *input == "null" {
 		server.connection.Write([]byte(fmt.Sprintf("%v\n", NotValidInput.Error())))
 	} else {
@@ -54,6 +27,7 @@ func (server *Server) PrintResponse(input *string) {
 }
 
 func (server *Server) getData(input string) {
+	log.Println("GET DATA!")
 	foundFlag := false
 	for i := 0; i < len(server.myMap); i++ {
 		if v, found := server.myMap[i][input]; found {
