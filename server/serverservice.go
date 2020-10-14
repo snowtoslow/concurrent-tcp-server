@@ -33,6 +33,7 @@ func (server *Server) getData(input *string) {
 	for i := 0; i < len(server.myMap); i++ {
 		if v, found := server.myMap[i][*input]; found {
 			foundFlag = true
+			err = nil
 			server.connection.Write([]byte(fmt.Sprintf("%v\n", v)))
 		} else {
 			if foundFlag == false {
