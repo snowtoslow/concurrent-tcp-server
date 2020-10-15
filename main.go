@@ -23,14 +23,13 @@ func init() {
 	}
 }
 
-var mutex = &sync.Mutex{}
-var wg = &sync.WaitGroup{}
-
 func main() {
 
 	initializedConfigs := config.New()
 	var myDataInArray = make(map[string]string)
 	filledGroupedData := parser.GroupedData{}
+	mutex := &sync.Mutex{}
+	wg := &sync.WaitGroup{}
 	connection := new(net.Conn)
 
 	runtime.GOMAXPROCS(7) // allow the run-time support to utilize more than one OS thread(in this case 7)
